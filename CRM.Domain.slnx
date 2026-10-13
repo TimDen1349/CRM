@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CRM.Domain/CRM.Domain.csproj" />
+  <Project Path="CRM.Tests/CRM.Tests.csproj" />
+</Solution>
