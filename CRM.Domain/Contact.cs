@@ -27,13 +27,11 @@ namespace CRM.Domain
             _tpy = tpy;
         }
 
-        // Клонирование контакта — создаём новый объект с теми же значениями
         public Contact Clone()
         {
             return new Contact(_beginDt, _endDt, _descr, _dataInfo, _tpy);
         }
 
-        // Перегрузка оператора "==": сравниваем по значениям всех полей
         public static bool operator ==(Contact a, Contact b)
         {
             if (ReferenceEquals(a, b)) return true;

@@ -3,7 +3,7 @@
     public class SbFirmType
     {
         private string _name;
-        private bool _isMain;   // является ли этот тип "основным подразделением"
+        private bool _isMain;
 
         public string Name { get => _name; set => _name = value; }
         public bool IsMain { get => _isMain; set => _isMain = value; }

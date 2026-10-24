@@ -21,17 +21,16 @@ namespace CRM.Domain
 
         public int ContactCount => _conts.Count;
 
-        // Является ли это подразделение основным
         public bool IsMain => _tpy != null && _tpy.IsMain;
 
         public SubFirm() { }
 
         public void AddContact(Contact c) => _conts.Add(c);
 
-        // Есть ли уже такой контакт (использует перегруженный == из Contact)
         public bool ExistContact(Contact c) => _conts.Contains(c);
 
-        // Совпадает ли тип этого подразделения с заданным
+        public Contact GetContact(int index) => _conts[index];
+
         public bool IsYourType(SbFirmType t)
         {
             if (t == null || _tpy == null) return false;

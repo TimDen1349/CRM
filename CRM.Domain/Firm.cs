@@ -44,15 +44,24 @@ namespace CRM.Domain
             return null;
         }
 
+        public SubFirm GetSubFirm(int index)
+        {
+            return _sbFirms[index];
+        }
+
         public void AddSubFirm(SubFirm sf) => _sbFirms.Add(sf);
 
         public void AddContactToSbFirm(int index, Contact c)
-            => _sbFirms[index].AddContact(c);
+        {
+            Contact temp = c.Clone();
+            _sbFirms[index].AddContact(temp);
+        }
 
         public void AddContact(Contact c)
         {
+            Contact temp = c.Clone();
             var main = GetMain();
-            if (main != null) main.AddContact(c);
+            if (main != null) main.AddContact(temp);
         }
 
         public bool ExistContact(Contact c)
@@ -63,7 +72,7 @@ namespace CRM.Domain
         }
 
         public string GetField(string key)
-            => _usrFields.ContainsKey(key) ? _usrFields[key] : null;
+            => _usrFields.ContainsKey(key) ? _usrFields[key] : throw new ArgumentException("Invalid key");
 
         public void SetField(string key, string value) => _usrFields[key] = value;
 

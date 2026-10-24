@@ -24,25 +24,28 @@ namespace CRM.Domain
             }
         }
 
-        private List<string> _flds = new List<string>();
-        private string _nameMain = "Основное подразделение";
-        private SbFirmType _mainType = new SbFirmType("Основное подразделение", true);
+        //private List<string> _flds = new List<string>();
 
-        public string NameMain { get => _nameMain; set => _nameMain = value; }
-        public SbFirmType MainType => _mainType;
-        private FirmFactory() { }
+        //private SbFirmType _mainType = new SbFirmType("Основное подразделение", true);
 
+        //public string NameMain { get => _nameMain; set => _nameMain = value; }
+        //public SbFirmType MainType => _mainType;
+        /*
         public void FldNames(params string[] names)
         {
-            _flds.Clear();
-            _flds.AddRange(names);
+            ;
         }
 
-        public List<string> GetFldNames() => new List<string>(_flds);
+        //public List<string> GetFldNames() => new List<string>(_flds);
+        */
+
+        public string[] fld = ["Отрасль", "Размер", "Приоритет", "Менеджер", "Статус"];
+
+        public FirmFactory() { }
 
         public Firm Create(string name, string country, string region,
                            string town, string street, string postInx,
-                           DateTime dateIn, string email, string web)
+                           DateTime dateIn, string email, string web,  SbFirmType mainType)
         {
             Firm f = new Firm();
             f.Name = name;
@@ -55,15 +58,19 @@ namespace CRM.Domain
             f.Email = email;
             f.Web = web;
 
-            foreach (var fldName in _flds)
+            foreach (var fldName in fld)
                 f.AddField(fldName, "");
 
             SubFirm main = new SubFirm();
-            main.Name = _nameMain;
-            main.SbFirmTpy = _mainType;
+            main.Name = mainType.Name;
+            main.SbFirmTpy = mainType;
             f.AddSubFirm(main);
 
             return f;
         }
+        //public void ResetState()
+        //{
+        //    _flds.Clear();
+        //}
     }
 }
