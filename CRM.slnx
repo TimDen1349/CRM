@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="CRM.AppLogic/CRM.AppLogic.csproj" Id="956e7a27-f50e-4469-866d-69da3ef4ea3d" />
   <Project Path="CRM.Domain/CRM.Domain.csproj" />
   <Project Path="CRM.Tests/CRM.Tests.csproj" />
 </Solution>
