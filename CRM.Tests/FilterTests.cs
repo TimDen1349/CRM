@@ -43,7 +43,7 @@ namespace CRM.Tests
 
             var result = contr.ApplyFilter();
 
-            Assert.AreEqual(1, result.Firms.Count);
+            Assert.HasCount(1, result.Firms);
             Assert.AreEqual("Ромашка", result.Firms[0].Name);
         }
     }

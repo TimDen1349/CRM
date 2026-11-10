@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CRM.Domain.Views;
+using CRM.AppLogic;
 
 namespace CRM.UI
 {
@@ -21,8 +23,7 @@ namespace CRM.UI
             this.Name = $"frmCompStr_{index}"; // Уникальное имя
 
             var lbl = new Label() { Text = fieldName, Left = 5, Top = 3, Width = 100 };
-            TxtValue = new TextBox() { Left = 110, Top = 0, Width = 150 };
-            ChkEnable = new CheckBox() { Text = "нет", Left = 270, Top = 2 };
+            TxtValue = new TextBox() { Name = "txtField_" + index, Left = 110, Top = 0, Width = 150 }; ChkEnable = new CheckBox() { Text = "нет", Left = 270, Top = 2 };
             RbContains = new RadioButton() { Text = "Содержит", Left = 320, Top = 2, Checked = true };
             RbNoContains = new RadioButton() { Text = "Не содержит", Left = 410, Top = 2 };
 

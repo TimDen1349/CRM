@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using CRM.Domain.Views;
 using CRM.AppLogic;
+using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace CRM.UI
 {
     public partial class frmFilter : Form
     {
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public FilterContr Controller { get; set; }
         private List<UserControl> _fieldControls = new List<UserControl>();
 

@@ -1,8 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Windows.Automation;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
+using System.Windows.Automation;
+using System.IO; // Не забудьте добавить это в using
+
 
 namespace CRM.UITests
 {
@@ -11,15 +14,29 @@ namespace CRM.UITests
     {
         private Process _app;
 
-        [TestInitialize]
+
+    [TestInitialize]
         public void Setup()
         {
-            // Запускаем exe-файл нашего приложения (предварительно собрав его)
-            _app = Process.Start(@"..\..\..\CRM.UI\bin\Debug\CRM.UI.exe");
-            Thread.Sleep(2000); // Ждем загрузки
+            // 1. Получаем папку, где лежит сам тест (CRM.UITests\bin\Debug\net10.0-windows)
+            string testDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            // 2. Формируем путь к exe-файлу относительно папки теста
+            // Выходим на 4 уровня вверх до папки решения (CRM), а затем идем в CRM.UI
+            string exePath = Path.GetFullPath(Path.Combine(testDir, @"..\..\..\CRM.UI\bin\Debug\net10.0-windows\CRM.UI.exe"));
+
+            // Проверка: если файл не найден, мы выведем понятную ошибку
+            if (!File.Exists(exePath))
+            {
+                throw new FileNotFoundException($"Не удалось найти приложение по пути: {exePath}. Убедитесь, что проект CRM.UI успешно собран.");
+            }
+
+            // Запускаем
+            _app = Process.Start(exePath);
+            Thread.Sleep(4000);
         }
 
-        [TestCleanup]
+    [TestCleanup]
         public void Cleanup()
         {
             if (_app != null && !_app.HasExited) _app.Kill();
@@ -51,7 +68,7 @@ namespace CRM.UITests
 
             // 4. Находим поле ввода для города (можно искать по типу ControlType.Edit)
             var txtCity = filterWindow.FindFirst(TreeScope.Descendants,
-                new Condition(AndCondition(PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit))));
+                new PropertyCondition(AutomationElement.AutomationIdProperty, "txtField_1"));
 
             // Вводим "Москва"
             ((ValuePattern)txtCity.GetCurrentPattern(ValuePattern.Pattern)).SetValue("Москва");
