@@ -20,7 +20,7 @@ namespace CRM.AppLogic
             ViewSettings.Fields.Add(new NameField());
             ViewSettings.Fields.Add(new TownField());
             ViewSettings.Fields.Add(new DateInField());
-            ViewSettings.Fields.Add(new DateBegField());
+            ViewSettings.Fields.Add(new LastContactDateField());
         }
     }
 

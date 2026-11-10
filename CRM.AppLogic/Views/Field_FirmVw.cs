@@ -44,22 +44,46 @@ namespace CRM.Domain.Views
         public override FilterRule CreateRule() => new DateRule(Name, f => f.DateIn);
     }
 
-    public class DateBegField : Field
+    public class LastContactDateField : Field
     {
-        public DateBegField() { Name = "Дата начала"; }
+        public LastContactDateField() { Name = "Дата посл. контакта"; } // Понятное название
         public override string GetValue(Firm firm)
         {
             var contacts = firm.GetMain()?.GetAllContacts();
-            if (contacts == null || !contacts.Any()) return "";
+            if (contacts == null || !contacts.Any()) return "Нет контактов";
             return contacts.Max(c => c.BeginDt).ToShortDateString();
         }
-        public override Field Clone() => new DateBegField();
+        public override Field Clone() => new LastContactDateField();
         public override FilterRule CreateRule() => new DateRule(Name, f =>
         {
             var contacts = f.GetMain()?.GetAllContacts();
             if (contacts == null || !contacts.Any()) return DateTime.MinValue;
             return contacts.Max(c => c.BeginDt);
         });
+    }
+
+    public class RegionField : Field
+    {
+        public RegionField() { Name = "Регион"; }
+        public override string GetValue(Firm firm) => firm.Region;
+        public override Field Clone() => new RegionField();
+        public override FilterRule CreateRule() => new StrRule(Name, f => f.Region);
+    }
+
+    public class CountryField : Field
+    {
+        public CountryField() { Name = "Страна"; }
+        public override string GetValue(Firm firm) => firm.Country;
+        public override Field Clone() => new CountryField();
+        public override FilterRule CreateRule() => new StrRule(Name, f => f.Country);
+    }
+
+    public class WebField : Field
+    {
+        public WebField() { Name = "Сайт"; }
+        public override string GetValue(Firm firm) => firm.Web;
+        public override Field Clone() => new WebField();
+        public override FilterRule CreateRule() => new StrRule(Name, f => f.Web);
     }
 
     // Класс, хранящий набор отображаемых полей

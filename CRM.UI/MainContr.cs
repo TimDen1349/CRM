@@ -1,8 +1,9 @@
-﻿using System;
+﻿using CRM.AppLogic;
+using CRM.Domain;
+using CRM.Domain.Views;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using CRM.Domain;
-using CRM.AppLogic;
 
 namespace CRM.UI
 {
@@ -34,6 +35,35 @@ namespace CRM.UI
             MainForm = new frmMain(this);
         }
 
+        public void ShowColumnSettings()
+        {
+            // 1. Формируем список ВСЕХ возможных полей для нашей CRM
+            // (При добавлении новых полей в систему, вы будете добавлять их сюда)
+            var allFields = new List<Field>
+            {
+                new NameField(),
+                new TownField(),
+                new RegionField(),
+                new CountryField(),
+                new DateInField(),
+                new LastContactDateField(),
+                new WebField()
+            };
+
+            // 2. Открываем форму, передавая ей все поля и текущие выбранные
+            using (var frm = new frmSelectFields(allFields, Mngr.ViewSettings.Fields))
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    // 3. Если пользователь нажал "Применить", обновляем настройки
+                    Mngr.ViewSettings.Fields = frm.SelectedFields;
+
+                    // 4. Перерисовываем таблицу
+                    MainForm.RefreshList();
+                }
+            }
+        }
+
         public void ShowFilter()
         {
             // 4. Создаем ВРЕМЕННЫЙ менеджер из ПОЛНОГО списка фирм для фильтрации
@@ -56,6 +86,49 @@ namespace CRM.UI
                     MainForm.RefreshList();
                 }
             }
+        }
+
+        public void ShowAddFirm()
+        {
+            using (var frm = new frmAddEditFirm(null))
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    // Забираем созданную фирму из Tag
+                    var newFirm = frm.Tag as Firm;
+                    if (newFirm != null)
+                    {
+                        _allFirms.Add(newFirm); // Добавляем в исходный список
+
+                        // Сбрасываем фильтр, чтобы показать всё (или применяем текущий)
+                        Mngr = new FirmMngr(_allFirms);
+                        Mngr.ViewSettings = frmShowSettingsSafe(Mngr.ViewSettings);
+                        MainForm.RefreshList();
+                    }
+                }
+            }
+        }
+
+        public void ShowEditFirm(Firm firm)
+        {
+            if (firm == null) return;
+
+            using (var frm = new frmAddEditFirm(firm))
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    // Данные в firm обновились автоматически (т.к. это ссылочный тип)
+                    // Просто перерисовываем таблицу
+                    MainForm.RefreshList();
+                }
+            }
+        }
+
+        // Вспомогательный метод, чтобы не сбрасывать настройки столбцов при добавлении
+        private FirmVw frmShowSettingsSafe(FirmVw currentSettings)
+        {
+            var frm = new frmSelectFields(new List<Field>(), currentSettings.Fields); // Упрощенный трюк
+            return currentSettings;
         }
     }
 }
