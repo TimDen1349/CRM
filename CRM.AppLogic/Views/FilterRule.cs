@@ -57,4 +57,26 @@ namespace CRM.Domain.Views
             return exp.Compare(actual, FilterDate);
         }
     }
+
+    // Правило для целых чисел (Число контактов)
+    public class IntRule : FilterRule
+    {
+        public int FilterValue { get; set; }
+        public LogExpEnum Operation { get; set; }
+        private Func<Firm, int> _getter;
+
+        public IntRule(string fieldName, Func<Firm, int> getter)
+        {
+            FieldName = fieldName;
+            _getter = getter;
+        }
+
+        public override bool FirmRespond(Firm firm)
+        {
+            if (!IsEnabled) return true;
+            var actual = _getter(firm);
+            var exp = LogExpFactory.Create(Operation);
+            return exp.Compare(actual, FilterValue);
+        }
+    }
 }

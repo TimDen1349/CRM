@@ -3,5 +3,5 @@
   <Project Path="CRM.Domain/CRM.Domain.csproj" />
   <Project Path="CRM.Tests/CRM.Tests.csproj" />
   <Project Path="CRM.UI/CRM.UI.csproj" Id="ef89db00-877a-4d03-8964-6aa8d93a3d20" />
-  <Project Path="CRM.UITests/CRM.UITests.csproj" Id="413d415f-26f8-4f2c-9973-71233acd0fa6" />
+  <Project Path="CRM.UITests/CRM.UITests.csproj" Id="c85b496a-431e-454b-b0d6-5351da8ba6bd" />
 </Solution>

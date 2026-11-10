@@ -19,6 +19,13 @@ namespace CRM.UI
         public TextBox TxtWeb { get; private set; }
         public DateTimePicker DtpDateIn { get; private set; }
 
+        // Свойства для пользовательских полей
+        public TextBox TxtFld1 { get; private set; }
+        public TextBox TxtFld2 { get; private set; }
+        public TextBox TxtFld3 { get; private set; }
+        public TextBox TxtFld4 { get; private set; }
+        public TextBox TxtFld5 { get; private set; }
+
         // Поля для добавления контакта
         private TextBox _txtContactDescr;
         private Button _btnAddContact;
@@ -29,7 +36,9 @@ namespace CRM.UI
             _isEditMode = firm != null;
 
             this.Text = _isEditMode ? "Редактирование фирмы" : "Добавление фирмы";
-            this.Size = new System.Drawing.Size(450, 480);
+            // Увеличили высоту окна и добавили скролл, чтобы поместились все поля
+            this.Size = new System.Drawing.Size(450, 650);
+            this.AutoScroll = true;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -38,27 +47,38 @@ namespace CRM.UI
             int y = 10;
 
             // Функция для быстрого создания поля с подписью
-            void AddField(string label, out TextBox textBox)
+            void AddField(string label, string controlName, out TextBox textBox)
             {
                 var lbl = new Label() { Text = label, Left = 20, Top = y + 3, Width = 100 };
-                textBox = new TextBox() { Left = 130, Top = y, Width = 250 };
+                textBox = new TextBox() { Name = controlName, Left = 130, Top = y, Width = 250 };
                 this.Controls.Add(lbl);
                 this.Controls.Add(textBox);
                 y += 30;
             }
 
-            AddField("Название:", out TextBox txtName);
-            AddField("Страна:", out TextBox txtCountry);
-            AddField("Регион:", out TextBox txtRegion);
-            AddField("Город:", out TextBox txtTown);
-            AddField("Улица:", out TextBox txtStreet);
-            AddField("Индекс:", out TextBox txtPostInx);
-            AddField("Email:", out TextBox txtEmail);
-            AddField("Сайт (Web):", out TextBox txtWeb);
+            AddField("Название:", "txtName", out TextBox txtName);
+            AddField("Страна:", "txtCountry", out TextBox txtCountry);
+            AddField("Регион:", "txtRegion", out TextBox txtRegion);
+            AddField("Город:", "txtTown", out TextBox txtTown);
+            AddField("Улица:", "txtStreet", out TextBox txtStreet);
+            AddField("Индекс:", "txtIndex", out TextBox txtPostInx);
+            AddField("Email:", "txtEmail", out TextBox txtEmail);
+            AddField("Сайт (Web):", "txtWeb", out TextBox txtWeb);
 
+            // Пользовательские поля
+            var flds = FirmFactory.Instance.fld;
+            AddField(flds[0] + ":", "txtFld1", out TextBox txtFld1);
+            AddField(flds[1] + ":", "txtFld2", out TextBox txtFld2);
+            AddField(flds[2] + ":", "txtFld3", out TextBox txtFld3);
+            AddField(flds[3] + ":", "txtFld4", out TextBox txtFld4);
+            AddField(flds[4] + ":", "txtFld5", out TextBox txtFld5);
+
+            // Присваиваем значения свойствам класса
             TxtName = txtName; TxtCountry = txtCountry; TxtRegion = txtRegion;
             TxtTown = txtTown; TxtStreet = txtStreet; TxtPostInx = txtPostInx;
             TxtEmail = txtEmail; TxtWeb = txtWeb;
+            TxtFld1 = txtFld1; TxtFld2 = txtFld2; TxtFld3 = txtFld3;
+            TxtFld4 = txtFld4; TxtFld5 = txtFld5;
 
             // Дата ввода
             var lblDate = new Label() { Text = "Дата ввода:", Left = 20, Top = y + 3, Width = 100 };
@@ -105,10 +125,10 @@ namespace CRM.UI
             }
 
             // Кнопки Сохранить/Отмена
-            var btnSave = new Button() { Text = "Сохранить", Left = 130, Top = y, Width = 100 };
+            var btnSave = new Button() { Name = "btnSave", Text = "Сохранить", Left = 130, Top = y, Width = 100 };
             btnSave.Click += BtnSave_Click;
 
-            var btnCancel = new Button() { Text = "Отмена", Left = 240, Top = y, Width = 100 };
+            var btnCancel = new Button() { Name = "btnCancel", Text = "Отмена", Left = 240, Top = y, Width = 100 };
             btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
 
             this.Controls.Add(btnSave);
@@ -126,6 +146,13 @@ namespace CRM.UI
                 TxtEmail.Text = _firm.Email;
                 TxtWeb.Text = _firm.Web;
                 DtpDateIn.Value = _firm.DateIn;
+
+                // Заполняем пользовательские поля
+                TxtFld1.Text = _firm[flds[0]] ?? "";
+                TxtFld2.Text = _firm[flds[1]] ?? "";
+                TxtFld3.Text = _firm[flds[2]] ?? "";
+                TxtFld4.Text = _firm[flds[3]] ?? "";
+                TxtFld5.Text = _firm[flds[4]] ?? "";
             }
         }
 
@@ -149,16 +176,32 @@ namespace CRM.UI
                 _firm.Email = TxtEmail.Text;
                 _firm.Web = TxtWeb.Text;
                 _firm.DateIn = DtpDateIn.Value;
+
+                // Сохраняем пользовательские поля
+                var flds = FirmFactory.Instance.fld;
+                _firm.SetField(flds[0], TxtFld1.Text);
+                _firm.SetField(flds[1], TxtFld2.Text);
+                _firm.SetField(flds[2], TxtFld3.Text);
+                _firm.SetField(flds[3], TxtFld4.Text);
+                _firm.SetField(flds[4], TxtFld5.Text);
             }
             else
             {
-                // Создаем новую через фабрику (как требует лаба №3)
+                // Создаем новую через фабрику
                 var mainType = new SbFirmType("Главный офис", true);
                 var newFirm = FirmFactory.Instance.Create(
                     TxtName.Text, TxtCountry.Text, TxtRegion.Text, TxtTown.Text,
                     TxtStreet.Text, TxtPostInx.Text, DtpDateIn.Value,
                     TxtEmail.Text, TxtWeb.Text, mainType
                 );
+
+                // Сохраняем пользовательские поля для новой фирмы
+                var flds = FirmFactory.Instance.fld;
+                newFirm.SetField(flds[0], TxtFld1.Text);
+                newFirm.SetField(flds[1], TxtFld2.Text);
+                newFirm.SetField(flds[2], TxtFld3.Text);
+                newFirm.SetField(flds[3], TxtFld4.Text);
+                newFirm.SetField(flds[4], TxtFld5.Text);
 
                 // Возвращаем созданную фирму через Tag, чтобы контроллер ее забрал
                 this.Tag = newFirm;

@@ -22,7 +22,7 @@ namespace CRM.UI
             this.Text = "CRM Система";
             this.Size = new Size(800, 600);
 
-            LvFirms = new ListView() { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true };
+            LvFirms = new ListView() { Name = "lvFirms", Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true };
 
             // ДОБАВЛЯЕМ ОБРАБОТЧИК ДВОЙНОГО КЛИКА ДЛЯ РЕДАКТИРОВАНИЯ
             LvFirms.DoubleClick += (s, e) =>
@@ -39,14 +39,12 @@ namespace CRM.UI
 
             var topPanel = new Panel() { Dock = DockStyle.Top, Height = 40 };
 
-            var btnFilter = new Button() { Text = "Фильтр", Left = 10, Top = 8, Width = 100 };
+            var btnFilter = new Button() { Name = "btnFilter", Text = "Фильтр", Left = 10, Top = 8, Width = 100 };
+            var btnColumns = new Button() { Name = "btnColumns", Text = "Столбцы", Left = 120, Top = 8, Width = 100 };
+            var btnAdd = new Button() { Name = "btnAdd", Text = "Добавить фирму", Left = 230, Top = 8, Width = 120 };
+
             btnFilter.Click += (s, e) => _contr.ShowFilter();
-
-            var btnColumns = new Button() { Text = "Столбцы", Left = 120, Top = 8, Width = 100 };
             btnColumns.Click += (s, e) => _contr.ShowColumnSettings();
-
-            // НОВАЯ КНОПКА ДОБАВЛЕНИЯ
-            var btnAdd = new Button() { Text = "Добавить фирму", Left = 230, Top = 8, Width = 120 };
             btnAdd.Click += (s, e) => _contr.ShowAddFirm();
 
             topPanel.Controls.Add(btnFilter);

@@ -19,12 +19,12 @@ namespace CRM.UI
             this.Name = $"frmCompVal_{index}";
 
             var lbl = new Label() { Text = fieldName, Left = 5, Top = 3, Width = 100 };
-            DtpValue = new DateTimePicker() { Left = 110, Top = 0, Width = 150, Format = DateTimePickerFormat.Short };
-            ChkEnable = new CheckBox() { Text = "нет", Left = 270, Top = 2, Width = 50 };
+            DtpValue = new DateTimePicker() { Name = "dtpField_" + index, Left = 110, Top = 0, Width = 150, Format = DateTimePickerFormat.Short };
+            ChkEnable = new CheckBox() { Name = "chkEnable_" + index, Text = "нет", Left = 270, Top = 2, Width = 50 };
 
             // Для дат используем операции: =, >, <
             RbEQ = new RadioButton() { Text = "=", Left = 330, Top = 2, Checked = true, Width = 40 };
-            RbGT = new RadioButton() { Text = ">", Left = 380, Top = 2, Width = 40 };
+            RbGT = new RadioButton() { Name = "rbGT_" + index, Text = ">", Left = 380, Top = 2, Width = 40 };
             RbLT = new RadioButton() { Text = "<", Left = 430, Top = 2, Width = 40 };
 
             ChkEnable.CheckedChanged += (s, e) => { DtpValue.Enabled = !ChkEnable.Checked; };

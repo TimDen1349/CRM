@@ -37,7 +37,7 @@ namespace CRM.UI
                 {
                     comp = new frmCompStr(rule.FieldName, index, y);
                 }
-                else if (rule is DateRule)
+                else if (rule is DateRule || rule is IntRule) // <--- ДОБАВИЛИ IntRule
                 {
                     comp = new frmCompVal(rule.FieldName, index, y);
                 }
@@ -51,7 +51,8 @@ namespace CRM.UI
                 index++;
             }
 
-            var btnApply = new Button() { Text = "Применить", Top = y + 10, Left = 10, Width = 100 };
+            // Добавьте Name для кнопки применения
+            var btnApply = new Button() { Name = "btnApply", Text = "Применить", Top = y + 10, Left = 10, Width = 100 };
             btnApply.Click += BtnApply_Click;
             this.Controls.Add(btnApply);
 
@@ -72,14 +73,23 @@ namespace CRM.UI
                     if (strComp.RbContains.Checked) strRule.Operation = LogExpEnum.Contains;
                     else if (strComp.RbNoContains.Checked) strRule.Operation = LogExpEnum.NoContains;
                 }
-                else if (_fieldControls[index] is frmCompVal dateComp && rule is DateRule dateRule)
+                else if (_fieldControls[index] is frmCompVal valComp)
                 {
-                    dateRule.IsEnabled = !dateComp.ChkEnable.Checked;
-                    dateRule.FilterDate = dateComp.DtpValue.Value;
+                    if (rule is DateRule dateRule)
+                    {
+                        dateRule.IsEnabled = !valComp.ChkEnable.Checked;
+                        dateRule.FilterDate = valComp.DtpValue.Value;
 
-                    if (dateComp.RbGT.Checked) dateRule.Operation = LogExpEnum.GT;
-                    else if (dateComp.RbLT.Checked) dateRule.Operation = LogExpEnum.LT;
-                    else dateRule.Operation = LogExpEnum.EQ;
+                        if (valComp.RbGT.Checked) dateRule.Operation = LogExpEnum.GT;
+                        else if (valComp.RbLT.Checked) dateRule.Operation = LogExpEnum.LT;
+                        else dateRule.Operation = LogExpEnum.EQ;
+                    }
+                    else if (rule is IntRule intRule)
+                    {
+                        intRule.IsEnabled = !valComp.ChkEnable.Checked;
+                        // Пытаемся распарсить значение из DateTimePicker (или замените на TextBox для чисел)
+                        intRule.FilterValue = valComp.DtpValue.Value.Day;
+                    }
                 }
                 index++;
             }

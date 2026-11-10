@@ -86,6 +86,42 @@ namespace CRM.Domain.Views
         public override FilterRule CreateRule() => new StrRule(Name, f => f.Web);
     }
 
+
+    public class PostInxField : Field
+    {
+        public PostInxField() { Name = "Индекс"; }
+        public override string GetValue(Firm firm) => firm.PostInx;
+        public override Field Clone() => new PostInxField();
+        public override FilterRule CreateRule() => new StrRule(Name, f => f.PostInx);
+    }
+
+    public class StreetField : Field
+    {
+        public StreetField() { Name = "Улица"; }
+        public override string GetValue(Firm firm) => firm.Street;
+        public override Field Clone() => new StreetField();
+        public override FilterRule CreateRule() => new StrRule(Name, f => f.Street);
+    }
+
+
+    public class CountContField : Field
+    {
+        public CountContField() { Name = "Число контактов"; }
+        public override string GetValue(Firm firm) => (firm.GetMain()?.ContactCount ?? 0).ToString();
+        public override Field Clone() => new CountContField();
+        public override FilterRule CreateRule() => new IntRule(Name, f => f.GetMain()?.ContactCount ?? 0);
+    }
+
+    // Класс для пользовательских полей (Field1...Field5)
+    public class UsrField : Field
+    {
+        private string _key;
+        public UsrField(string key) { _key = key; Name = key; }
+        public override string GetValue(Firm firm) => firm[_key] ?? "";
+        public override Field Clone() => new UsrField(_key);
+        public override FilterRule CreateRule() => new StrRule(Name, f => f[_key] ?? "");
+    }
+
     // Класс, хранящий набор отображаемых полей
     public class FirmVw
     {

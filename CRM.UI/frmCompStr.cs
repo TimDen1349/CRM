@@ -23,8 +23,8 @@ namespace CRM.UI
             this.Name = $"frmCompStr_{index}";
 
             var lbl = new Label() { Text = fieldName, Left = 5, Top = 3, Width = 100 };
-            TxtValue = new TextBox() { Left = 110, Top = 0, Width = 150 };
-            ChkEnable = new CheckBox() { Text = "нет", Left = 270, Top = 2, Width = 50 };
+            TxtValue = new TextBox() { Name = "txtField_" + index, Left = 110, Top = 0, Width = 150 };
+            ChkEnable = new CheckBox() { Name = "chkEnable_" + index, Text = "нет", Left = 270, Top = 2, Width = 50 };
 
             // Сдвинули радиокнопки правее, чтобы не наезжали
             RbContains = new RadioButton() { Text = "Содержит", Left = 330, Top = 2, Checked = true, Width = 100 };
