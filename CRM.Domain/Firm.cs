@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace CRM.Domain
 {
@@ -44,17 +45,59 @@ namespace CRM.Domain
             return null;
         }
 
-        public SubFirm GetSubFirm(int index)
+        public SubFirm GetSubFirmByType(SbFirmType type)
         {
-            return _sbFirms[index];
+            foreach (var sf in _sbFirms)
+            {
+                if (sf.IsYourType(type))
+                {
+                    return sf;
+                }
+            }
+            return null;
         }
 
-        public void AddSubFirm(SubFirm sf) => _sbFirms.Add(sf);
+        public SubFirm GetSubFirmByName(string name)
+        {
+            foreach (var sf in _sbFirms)
+            {
+                if (sf.Name == name)
+                {
+                    return sf;
+                }
+            }
+            return null;
+        }
+        public void AddSubFirm(SubFirm new_sf)
+        {
+            if (new_sf == null || new_sf.Name == "" || new_sf.SbFirmTpy == null)
+            {
+                throw new ArgumentException("Invalid SbFirm");
+            }
+            foreach (var sf in _sbFirms)
+            {
+                if (sf.IsYourType(new_sf.SbFirmTpy))
+                {
+                    throw new ArgumentException("SbFirm with that type already exist in Firm");
+                }
+                if (sf.Name == new_sf.Name)
+                {
+                    throw new ArgumentException("SbFirm with that name already exist in Firm");
+                }
+            }
+            _sbFirms.Add(new_sf);
+        }
 
-        public void AddContactToSbFirm(int index, Contact c)
+        public bool AddContactToSbFirm(string name_sf, Contact c)
         {
             Contact temp = c.Clone();
-            _sbFirms[index].AddContact(temp);
+            foreach (var sf in _sbFirms)
+                if (sf.Name == name_sf)
+                {
+                    sf.AddContact(temp);
+                    return true;
+                }
+            return false;
         }
 
         public void AddContact(Contact c)
@@ -62,6 +105,30 @@ namespace CRM.Domain
             Contact temp = c.Clone();
             var main = GetMain();
             if (main != null) main.AddContact(temp);
+        }
+
+        public List<Contact> GetContact(Contact c)
+        {
+            if (c == null) return null;
+            var list = new List<Contact>();
+            foreach (var sf in _sbFirms)
+            {
+                var found = sf.GetContact(c);
+                if (found != null) list.Add(found);
+            }
+            return list;
+        }
+
+        public List<Contact> GetContactByType(ContType c)
+        {
+            if (c == null) return null;
+            var list = new List<Contact>();
+            foreach (var sf in _sbFirms)
+            {
+                var found = sf.GetContactByType(c);
+                if (found != null) list.Add(found);
+            }
+            return list;
         }
 
         public bool ExistContact(Contact c)

@@ -24,21 +24,6 @@ namespace CRM.Domain
             }
         }
 
-        //private List<string> _flds = new List<string>();
-
-        //private SbFirmType _mainType = new SbFirmType("Основное подразделение", true);
-
-        //public string NameMain { get => _nameMain; set => _nameMain = value; }
-        //public SbFirmType MainType => _mainType;
-        /*
-        public void FldNames(params string[] names)
-        {
-            ;
-        }
-
-        //public List<string> GetFldNames() => new List<string>(_flds);
-        */
-
         public string[] fld = ["Отрасль", "Размер", "Приоритет", "Менеджер", "Статус"];
 
         public FirmFactory() { }
@@ -68,9 +53,5 @@ namespace CRM.Domain
 
             return f;
         }
-        //public void ResetState()
-        //{
-        //    _flds.Clear();
-        //}
     }
 }

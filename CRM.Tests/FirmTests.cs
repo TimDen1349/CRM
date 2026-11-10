@@ -86,53 +86,62 @@ namespace CRM.Tests
             Assert.IsNull(firm.GetMain());
         }
 
-        //  (Новый) тест для добавления филиала
+        //  (Новый) Тест добавления одной субфирмы и проверки ее по имени
         [TestMethod]
-        public void AddSubFirm_IncreasesCount_AndStoresCorrectly()
+        public void AddSubFirm_AndCheckIt_WithName()
         {
             var firm = FirmFactory.Instance.Create("X", "RU", "", "", "", "", DateTime.Now, "", "", mainType);
 
-            var branchType = new SbFirmType("Филиал", false);
-            var newSubFirm = new SubFirm
+            var branchType = new SbFirmType("_Филиал", false);
+            var newSubFirm1 = new SubFirm
+            {
+                Name = "_Филиал в СПб",
+                SbFirmTpy = branchType
+            };
+
+            firm.AddSubFirm(newSubFirm1);
+
+            var newSubFirmFake1 = new SubFirm
             {
                 Name = "Филиал в СПб",
                 SbFirmTpy = branchType
             };
 
-            firm.AddSubFirm(newSubFirm);
+            Assert.Throws<ArgumentException>(() => firm.AddSubFirm(newSubFirmFake1));
 
+            Assert.AreEqual(newSubFirm1, firm.GetSubFirmByName("_Филиал в СПб"));
+            Assert.IsFalse(firm.GetSubFirmByName("_Филиал в СПб").IsMain);
             Assert.AreEqual(2, firm.SbFirmsCount);
-            Assert.IsFalse(newSubFirm.IsMain);
         }
 
-        //  (Новый) тест для добавления контактов в главное подраздение и филиал
+        //  (Новый) Тест для добавления нескольких субфирм
         [TestMethod]
-        public void AddContacts_ToMainAndSubFirm_DistributesCorrectly()
+        public void AddSubFirm_IncreasesCount_AndStoresCorrectly()
         {
             var firm = FirmFactory.Instance.Create("X", "RU", "", "", "", "", DateTime.Now, "", "", mainType);
 
-            var branchType = new SbFirmType("Филиал", false);
-            var branch = new SubFirm { Name = "Филиал", SbFirmTpy = branchType };
-            firm.AddSubFirm(branch);
+            var branchType1 = new SbFirmType("_Филиал", false);
+            var newSubFirm1 = new SubFirm
+            {
+                Name = "Филиал в СПб",
+                SbFirmTpy = branchType1
+            };
 
-            var type = new ContType("Звонок", "");
-            var contactMain = new Contact(DateTime.Now, DateTime.Now, "Основной", "Инфо1", type);
-            var contactBranch = new Contact(DateTime.Now, DateTime.Now, "Филиальный", "Инфо2", type);
+            var branchType2 = new SbFirmType("_Бухгалтерия", false);
+            var newSubFirm2 = new SubFirm
+            {
+                Name = "Бухгалтерия в СПб",
+                SbFirmTpy = branchType2
+            };
 
-            firm.AddContact(contactMain);
-            firm.AddContactToSbFirm(1, contactBranch);
+            firm.AddSubFirm(newSubFirm1);
+            firm.AddSubFirm(newSubFirm2);
 
-            Assert.AreEqual(1, firm.GetMain().ContactCount);
-            Assert.AreEqual(1, firm.GetSubFirm(1).ContactCount);
+            Assert.AreEqual(newSubFirm1, firm.GetSubFirmByType(branchType1));
+            Assert.AreEqual(newSubFirm2, firm.GetSubFirmByType(branchType2));
 
-            Assert.IsTrue(firm.ExistContact(contactMain));
-            Assert.IsTrue(firm.ExistContact(contactBranch));
-
-            Assert.IsTrue(firm.GetMain().ExistContact(contactMain));
-            Assert.IsFalse(firm.GetMain().ExistContact(contactBranch));
-
-            Assert.IsTrue(firm.GetSubFirm(1).ExistContact(contactBranch));
-            Assert.IsFalse(firm.GetSubFirm(1).ExistContact(contactMain));
+            Assert.IsFalse(firm.GetSubFirmByType(branchType1).IsMain);
+            Assert.IsFalse(firm.GetSubFirmByType(branchType2).IsMain);
         }
 
         //  (Новый) тест для добавление контакта в главное подразделение и проверки клон ли это
@@ -148,12 +157,93 @@ namespace CRM.Tests
 
             Assert.AreEqual(1, firm.GetMain().ContactCount);
 
-            var contactInFirm = firm.GetMain().GetContact(0);
+            var contactInFirm = firm.GetMain().GetContact(templateContact);
 
-            Assert.AreEqual(templateContact.CntType.Name, contactInFirm.CntType.Name);
-            Assert.IsFalse(ReferenceEquals(templateContact, contactInFirm));
+            Assert.AreEqual(templateContact, contactInFirm);
             Assert.AreNotSame(templateContact, contactInFirm);
         }
+
+        //  (Новый) тест для добавления контактов в главное подраздение и филиал
+        [TestMethod]
+        public void AddContacts_ToMainAndSubFirm_DistributesCorrectly()
+        {
+            var firm = FirmFactory.Instance.Create("X", "RU", "", "", "", "", DateTime.Now, "", "", mainType);
+
+            var branchType = new SbFirmType("Филиал", false);
+            var branch = new SubFirm { Name = "Филиал в СПб", SbFirmTpy = branchType };
+            firm.AddSubFirm(branch);
+
+            var type = new ContType("Звонок", "");
+            var contact = new Contact(DateTime.Now, DateTime.Now, "Основной", "Инфо", type);
+
+            firm.AddContact(contact);
+            firm.AddContactToSbFirm("Филиал в СПб", contact);
+
+            Assert.AreEqual(1, firm.GetMain().ContactCount);
+            Assert.AreEqual(1, firm.GetSubFirmByName("Филиал в СПб").ContactCount);
+
+            Assert.IsTrue(firm.ExistContact(contact));
+            Assert.IsTrue(firm.GetMain().ExistContact(contact));
+            Assert.IsTrue(firm.GetSubFirmByName("Филиал в СПб").ExistContact(contact));
+
+            var list = firm.GetContact(contact);
+
+            Assert.AreEqual(list[0], contact);
+            Assert.AreNotSame(list[0], contact);
+
+            Assert.AreEqual(list[1], contact);
+            Assert.AreNotSame(list[1], contact);
+        }
+
+        //  (Новый) тест для добавление нескольких контактов в 2 подразделения
+        [TestMethod]
+        public void AddSomeContact_ToMainfirmAndSbfirm()
+        {
+            var firm = FirmFactory.Instance.Create("X", "RU", "", "", "", "", DateTime.Now, "", "", mainType);
+
+            var branchType = new SbFirmType("Филиал", false);
+            var branch = new SubFirm { Name = "Филиал в СПб", SbFirmTpy = branchType };
+            firm.AddSubFirm(branch);
+
+            var type = new ContType("Звонок", "");
+            var type2 = new ContType("Встреча", "");
+            var contact = new Contact(DateTime.Now, DateTime.Now, "Основной", "Инфо", type);
+            var contact2 = new Contact(DateTime.Now, DateTime.Now, "Дополнительный", "Инфо", type2);
+
+            firm.AddContact(contact);
+            firm.AddContact(contact2);
+            firm.AddContactToSbFirm("Филиал в СПб", contact);
+            firm.AddContactToSbFirm("Филиал в СПб", contact2);
+
+            Assert.AreEqual(2, firm.GetMain().ContactCount);
+            Assert.AreEqual(2, firm.GetSubFirmByName("Филиал в СПб").ContactCount);
+
+            Assert.IsTrue(firm.ExistContact(contact));
+            Assert.IsTrue(firm.ExistContact(contact2));
+
+            Assert.IsTrue(firm.GetMain().ExistContact(contact));
+            Assert.IsTrue(firm.GetMain().ExistContact(contact2));
+
+            Assert.IsTrue(firm.GetSubFirmByName("Филиал в СПб").ExistContact(contact));
+            Assert.IsTrue(firm.GetSubFirmByName("Филиал в СПб").ExistContact(contact2));
+
+            var list = firm.GetContactByType(type);
+            var list2 = firm.GetContactByType(type2);
+
+            Assert.AreEqual(list[0], contact);
+            Assert.AreNotSame(list[0], contact);
+
+            Assert.AreEqual(list[1], contact);
+            Assert.AreNotSame(list[1], contact);
+
+            Assert.AreEqual(list2[0], contact2);
+            Assert.AreNotSame(list2[0], contact2);
+
+            Assert.AreEqual(list2[1], contact2);
+            Assert.AreNotSame(list2[1], contact2);
+        }
+
+
 
         //  (Новый) Тест для проверки добавления и обращения к коллекции типов контактов
         [TestMethod]
@@ -201,7 +291,7 @@ namespace CRM.Tests
             Assert.IsFalse(subFirm.IsYourType(branchType));
         }
 
-        //  (Новый) Тест для перезаписи значения поля с помощью команда AddField
+        //  (Новый) Тест для перезаписи значения поля с помощью команды AddField
         [TestMethod]
         public void AddField_OverwritesValue_IfKeyAlreadyExists()
         {

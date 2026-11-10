@@ -29,7 +29,28 @@ namespace CRM.Domain
 
         public bool ExistContact(Contact c) => _conts.Contains(c);
 
-        public Contact GetContact(int index) => _conts[index];
+        public List<Contact> GetAllContacts()
+        {
+            return _conts;
+        }
+
+        public Contact GetContact(Contact c)
+        {
+            foreach (var contact in _conts)
+            {
+                if (contact == c) return contact;
+            }
+            return null;
+        }
+
+        public Contact GetContactByType(ContType c)
+        {
+            foreach (var contact in _conts)
+            {
+                if (contact.CntType == c) return contact;
+            }
+            return null;
+        }
 
         public bool IsYourType(SbFirmType t)
         {
