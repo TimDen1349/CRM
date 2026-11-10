@@ -5,7 +5,7 @@ using System.Threading;
 using System.Windows.Forms;
 using CRM.UI;
 
-[assembly: DoNotParallelize] // КРИТИЧЕСКИ ВАЖНО: Запрещаем параллельный запуск тестов
+[assembly: DoNotParallelize]
 
 namespace CRM.UITests
 {
@@ -14,7 +14,7 @@ namespace CRM.UITests
     {
         private Thread _uiThread;
         private frmMain _mainForm;
-        private MainContr _mainContr; // Сохраняем ссылку на контроллер для проверки данных
+        private MainContr _mainContr;
 
         [TestInitialize]
         public void Setup()
@@ -48,7 +48,6 @@ namespace CRM.UITests
                 {
                     _mainForm.Invoke(new Action(() =>
                     {
-                        // Жестко закрываем все открытые окна
                         foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
                         {
                             if (f != _mainForm && !f.IsDisposed) f.Close();
@@ -63,7 +62,7 @@ namespace CRM.UITests
         }
 
         // ==========================================
-        // ТЕСТ 1: Фильтрация по городу
+        // ТЕСТ 1: Фильтрация по городу (Индекс 5)
         // ==========================================
         [TestMethod]
         public void UITest_FilterByCity_UpdatesListView()
@@ -74,23 +73,29 @@ namespace CRM.UITests
             var filterForm = WaitForDialog("Настройка фильтра");
             Assert.IsNotNull(filterForm, "Окно фильтра не открылось");
 
-            DisableRule(filterForm, 0); // Отключаем Название
-            DisableRule(filterForm, 2); // Отключаем Дату ввода
-            DisableRule(filterForm, 3); // Отключаем Дату контакта
+            // Отключаем ВСЕ правила (ставим галочки "нет")
+            for (int i = 0; i < 15; i++)
+            {
+                var chk = WaitForControl<CheckBox>(filterForm, "chkEnable_" + i, 1000);
+                if (chk != null) chk.Invoke(new Action(() => chk.Checked = true));
+            }
 
-            var txtTown = WaitForControl<TextBox>(filterForm, "txtField_1");
+            // Включаем ТОЛЬКО Город (индекс 5)
+            var chkTown = WaitForControl<CheckBox>(filterForm, "chkEnable_5");
+            chkTown.Invoke(new Action(() => chkTown.Checked = false));
+
+            var txtTown = WaitForControl<TextBox>(filterForm, "txtField_5");
             Assert.IsNotNull(txtTown, "Поле ввода города не найдено");
             txtTown.Invoke(new Action(() => txtTown.Text = "Москва"));
 
             var btnApply = WaitForControl<Button>(filterForm, "btnApply");
             btnApply.Invoke(new Action(() => btnApply.PerformClick()));
 
-            // Ждем, пока модель данных и UI обновятся
             Assert.IsTrue(WaitForListCount(1), "Фильтр по городу не сработал (ожидалась 1 фирма)");
         }
 
         // ==========================================
-        // ТЕСТ 2: Фильтрация по Дате посл. контакта
+        // ТЕСТ 2: Фильтрация по Дате контакта (Индекс 8)
         // ==========================================
         [TestMethod]
         public void UITest_FilterByContactDate_UpdatesListView()
@@ -101,15 +106,22 @@ namespace CRM.UITests
             var filterForm = WaitForDialog("Настройка фильтра");
             Assert.IsNotNull(filterForm, "Окно фильтра не открылось");
 
-            DisableRule(filterForm, 0); // Название
-            DisableRule(filterForm, 1); // Город
-            DisableRule(filterForm, 2); // Дата ввода
+            // Отключаем ВСЕ правила
+            for (int i = 0; i < 15; i++)
+            {
+                var chk = WaitForControl<CheckBox>(filterForm, "chkEnable_" + i, 1000);
+                if (chk != null) chk.Invoke(new Action(() => chk.Checked = true));
+            }
 
-            var dtpDate = WaitForControl<DateTimePicker>(filterForm, "dtpField_3");
+            // Включаем ТОЛЬКО Дату посл. контакта (индекс 8)
+            var chkDate = WaitForControl<CheckBox>(filterForm, "chkEnable_8");
+            chkDate.Invoke(new Action(() => chkDate.Checked = false));
+
+            var dtpDate = WaitForControl<DateTimePicker>(filterForm, "dtpField_8");
             Assert.IsNotNull(dtpDate, "Поле даты не найдено");
             dtpDate.Invoke(new Action(() => dtpDate.Value = new DateTime(2025, 1, 1)));
 
-            var rbGT = WaitForControl<RadioButton>(filterForm, "rbGT_3");
+            var rbGT = WaitForControl<RadioButton>(filterForm, "rbGT_8");
             Assert.IsNotNull(rbGT, "Радиокнопка '>' не найдена");
             rbGT.Invoke(new Action(() => rbGT.Checked = true));
 
@@ -151,26 +163,14 @@ namespace CRM.UITests
         // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
         // ==========================================
 
-        private void DisableRule(Form filterForm, int index)
-        {
-            var chk = WaitForControl<CheckBox>(filterForm, "chkEnable_" + index);
-            if (chk != null)
-            {
-                chk.Invoke(new Action(() => chk.Checked = true));
-            }
-        }
-
-        // Надежное ожидание: проверяет и модель данных, и UI
         private bool WaitForListCount(int expectedCount, int timeoutMs = 5000)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             while (sw.ElapsedMilliseconds < timeoutMs)
             {
-                int modelCount = _mainContr.Mngr.Firms.Count; // Проверяем саму модель
-
+                int modelCount = _mainContr.Mngr.Firms.Count;
                 if (modelCount == expectedCount)
                 {
-                    // Если модель верна, даем UI время перерисоваться и проверяем ListView
                     var listView = WaitForControl<ListView>(_mainForm, "lvFirms", 2000);
                     if (listView != null)
                     {
@@ -213,9 +213,7 @@ namespace CRM.UITests
             var sw = System.Diagnostics.Stopwatch.StartNew();
             while (sw.ElapsedMilliseconds < timeoutMs)
             {
-                // ДЕЛАЕМ СНИМОК КОЛЛЕКЦИИ, чтобы избежать ошибки "Collection was modified"
                 var openForms = Application.OpenForms.Cast<Form>().ToList();
-
                 foreach (Form f in openForms)
                 {
                     if (f.Text == title && f.Visible && !f.IsDisposed)
