@@ -29,10 +29,10 @@ namespace CRM.Domain.Views
 
         public override bool FirmRespond(Firm firm)
         {
-            if (!IsEnabled) return true;
+            if (!IsEnabled || string.IsNullOrWhiteSpace(FilterText)) return true; // <--- Игнорируем пустоту
             var actual = _getter(firm);
             var exp = LogExpFactory.Create(Operation);
-            return exp.Compare(actual, FilterText);
+            return exp.Compare(actual, FilterText.Trim()); // Добавили Trim на случай лишних пробелов
         }
     }
 
@@ -51,7 +51,7 @@ namespace CRM.Domain.Views
 
         public override bool FirmRespond(Firm firm)
         {
-            if (!IsEnabled) return true;
+            if (!IsEnabled || FilterDate == DateTime.MinValue) return true; // <--- Игнорируем пустые даты
             var actual = _getter(firm);
             var exp = LogExpFactory.Create(Operation);
             return exp.Compare(actual, FilterDate);

@@ -48,11 +48,33 @@ namespace CRM.UI
                 var item = new ListViewItem();
                 for (int i = 0; i < _contr.Mngr.ViewSettings.Fields.Count; i++)
                 {
-                    var val = _contr.Mngr.ViewSettings.Fields[i].GetValue(firm);
+                    var val = _contr.Mngr.ViewSettings.Fields[i].GetValue(firm) ?? "";
                     if (i == 0) item.Text = val;
                     else item.SubItems.Add(val);
                 }
                 LvFirms.Items.Add(item);
+            }
+
+            // --- АВТОМАТИЧЕСКАЯ НАСТРОЙКА ШИРИНЫ СТОЛБЦОВ ---
+            if (LvFirms.Columns.Count == 0) return;
+
+            for (int i = 0; i < LvFirms.Columns.Count; i++)
+            {
+                // 1. Замеряем ширину заголовка столбца
+                int maxWidth = TextRenderer.MeasureText(LvFirms.Columns[i].Text, LvFirms.Font).Width + 20;
+
+                // 2. Проходимся по всем ячейкам этого столбца и ищем самую длинную
+                foreach (ListViewItem item in LvFirms.Items)
+                {
+                    string cellText = (i == 0) ? item.Text : item.SubItems[i].Text;
+                    int cellWidth = TextRenderer.MeasureText(cellText, LvFirms.Font).Width + 20;
+
+                    if (cellWidth > maxWidth)
+                        maxWidth = cellWidth;
+                }
+
+                // 3. Устанавливаем ширину (ограничиваем минимум 80px, максимум 300px)
+                LvFirms.Columns[i].Width = Math.Max(80, Math.Min(maxWidth, 300));
             }
         }
     }

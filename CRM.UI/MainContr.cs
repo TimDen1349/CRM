@@ -8,6 +8,9 @@ namespace CRM.UI
 {
     public class MainContr
     {
+        // 1. Храним ИСХОДНЫЙ список всех фирм (источник правды)
+        private List<Firm> _allFirms;
+
         public FirmMngr Mngr { get; set; } = null!;
         public frmMain MainForm { get; set; } = null!;
 
@@ -23,17 +26,24 @@ namespace CRM.UI
             firm1.AddContact(new Contact(new DateTime(2026, 5, 20), DateTime.Now, "Тест", "Инфо", contactType));
             firm2.AddContact(new Contact(new DateTime(2024, 1, 15), DateTime.Now, "Тест2", "Инфо", contactType));
 
-            var firms = new List<Firm> { firm1, firm2, firm3 };
+            // 2. Сохраняем исходный список
+            _allFirms = new List<Firm> { firm1, firm2, firm3 };
 
-            // 2. Инициализируем менеджер и форму
-            Mngr = new FirmMngr(firms);
+            // 3. Инициализируем менеджер на основе исходного списка
+            Mngr = new FirmMngr(_allFirms);
             MainForm = new frmMain(this);
         }
 
         public void ShowFilter()
         {
-            var filterContr = new FilterContr(Mngr);
+            // 4. Создаем ВРЕМЕННЫЙ менеджер из ПОЛНОГО списка фирм для фильтрации
+            var tempMngr = new FirmMngr(_allFirms);
+            // Копируем текущие настройки отображения столбцов
+            tempMngr.ViewSettings = Mngr.ViewSettings;
 
+            var filterContr = new FilterContr(tempMngr);
+
+            // Автоматически создаем правила на основе текущих столбцов
             foreach (var field in Mngr.ViewSettings.Fields)
                 filterContr.Rules.Add(field.CreateRule());
 
@@ -41,6 +51,7 @@ namespace CRM.UI
             {
                 if (frm.ShowDialog() == DialogResult.OK)
                 {
+                    // 5. Заменяем текущий Mngr на отфильтрованный
                     Mngr = filterContr.ApplyFilter();
                     MainForm.RefreshList();
                 }

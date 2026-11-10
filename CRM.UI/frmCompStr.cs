@@ -19,15 +19,17 @@ namespace CRM.UI
         public frmCompStr(string fieldName, int index, int top)
         {
             this.Location = new System.Drawing.Point(10, top);
-            this.Size = new System.Drawing.Size(500, 25);
-            this.Name = $"frmCompStr_{index}"; // Уникальное имя
+            this.Size = new System.Drawing.Size(600, 25); // Увеличили ширину
+            this.Name = $"frmCompStr_{index}";
 
             var lbl = new Label() { Text = fieldName, Left = 5, Top = 3, Width = 100 };
-            TxtValue = new TextBox() { Name = "txtField_" + index, Left = 110, Top = 0, Width = 150 }; ChkEnable = new CheckBox() { Text = "нет", Left = 270, Top = 2 };
-            RbContains = new RadioButton() { Text = "Содержит", Left = 320, Top = 2, Checked = true };
-            RbNoContains = new RadioButton() { Text = "Не содержит", Left = 410, Top = 2 };
+            TxtValue = new TextBox() { Left = 110, Top = 0, Width = 150 };
+            ChkEnable = new CheckBox() { Text = "нет", Left = 270, Top = 2, Width = 50 };
 
-            // Логика инверсии "нет" (если галочка стоит, фильтр выключен)
+            // Сдвинули радиокнопки правее, чтобы не наезжали
+            RbContains = new RadioButton() { Text = "Содержит", Left = 330, Top = 2, Checked = true, Width = 100 };
+            RbNoContains = new RadioButton() { Text = "Не содержит", Left = 440, Top = 2, Width = 120 };
+
             ChkEnable.CheckedChanged += (s, e) => { TxtValue.Enabled = !ChkEnable.Checked; };
 
             this.Controls.AddRange(new Control[] { lbl, TxtValue, ChkEnable, RbContains, RbNoContains });

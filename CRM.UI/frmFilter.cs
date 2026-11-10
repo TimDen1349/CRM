@@ -1,13 +1,16 @@
-﻿using System;
+﻿using CRM.AppLogic;
+using CRM.Domain.Filtering;
+using CRM.Domain.Views;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CRM.Domain.Filtering;
 using CRM.Domain.Views;
 using CRM.AppLogic;
-using System.Windows.Forms;
-using System.ComponentModel;
 
 namespace CRM.UI
 {
@@ -21,39 +24,62 @@ namespace CRM.UI
         {
             this.Controller = contr;
             this.Text = "Настройка фильтра";
-            this.Size = new System.Drawing.Size(550, 600);
+            this.Size = new System.Drawing.Size(650, 600); // Сделали форму чуть шире
 
-            // Динамически создаем контролы для каждого правила
             int y = 10;
             int index = 0;
+
             foreach (var rule in contr.Rules)
             {
+                UserControl comp = null;
+
                 if (rule is StrRule)
                 {
-                    var comp = new frmCompStr(rule.FieldName, index, y);
+                    comp = new frmCompStr(rule.FieldName, index, y);
+                }
+                else if (rule is DateRule)
+                {
+                    comp = new frmCompVal(rule.FieldName, index, y);
+                }
+
+                if (comp != null)
+                {
                     _fieldControls.Add(comp);
                     this.Controls.Add(comp);
                     y += 30;
                 }
-                // (Для дат аналогично создается frmCompVal)
                 index++;
             }
 
             var btnApply = new Button() { Text = "Применить", Top = y + 10, Left = 10, Width = 100 };
             btnApply.Click += BtnApply_Click;
             this.Controls.Add(btnApply);
+
+            // Настраиваем высоту формы динамически, чтобы все влезло
+            this.Height = y + 100;
         }
 
-        private void BtnApply_Click(object sender, System.EventArgs e)
+        private void BtnApply_Click(object? sender, EventArgs e)
         {
             int index = 0;
             foreach (var rule in Controller.Rules)
             {
-                if (rule is StrRule strRule && _fieldControls[index] is frmCompStr uiComp)
+                if (_fieldControls[index] is frmCompStr strComp && rule is StrRule strRule)
                 {
-                    strRule.IsEnabled = !uiComp.ChkEnable.Checked;
-                    strRule.FilterText = uiComp.TxtValue.Text;
-                    // (Выбор операции Contains/NoContains)
+                    strRule.IsEnabled = !strComp.ChkEnable.Checked;
+                    strRule.FilterText = strComp.TxtValue.Text;
+
+                    if (strComp.RbContains.Checked) strRule.Operation = LogExpEnum.Contains;
+                    else if (strComp.RbNoContains.Checked) strRule.Operation = LogExpEnum.NoContains;
+                }
+                else if (_fieldControls[index] is frmCompVal dateComp && rule is DateRule dateRule)
+                {
+                    dateRule.IsEnabled = !dateComp.ChkEnable.Checked;
+                    dateRule.FilterDate = dateComp.DtpValue.Value;
+
+                    if (dateComp.RbGT.Checked) dateRule.Operation = LogExpEnum.GT;
+                    else if (dateComp.RbLT.Checked) dateRule.Operation = LogExpEnum.LT;
+                    else dateRule.Operation = LogExpEnum.EQ;
                 }
                 index++;
             }
